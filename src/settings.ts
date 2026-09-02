@@ -1,7 +1,7 @@
 import {App, normalizePath, PluginSettingTab, sanitizeHTMLToDom, Setting} from "obsidian";
 import {groupNameForPath} from "./utils/BookmarksCorePluginSignature";
 import CustomSortPlugin from "./main";
-import { t, LanguageCode, setLanguage } from "./i18n";
+import { t, LanguageCode, setLanguage, getAvailableLocales } from "./i18n";
 
 export interface CustomSortPluginSettings {
     additionalSortspecFile: string
@@ -66,18 +66,22 @@ export class CustomSortSettingTab extends PluginSettingTab {
         new Setting(containerEl)
             .setName(t('settings.languageName'))
             .setDesc(t('settings.languageDesc'))
-            .addDropdown(dropdown => dropdown
-                .addOption('auto', t('lang.auto'))
-                .addOption('zh', t('lang.zh'))
-                .addOption('en', t('lang.en'))
-                .setValue(this.plugin.settings.language)
-                .onChange(async (value: LanguageCode) => {
-                    this.plugin.settings.language = value;
-                    setLanguage(value);
-                    await this.plugin.saveSettings();
-                    // Re-render the settings tab in the new language
-                    this.display();
-                }));
+            .addDropdown(dropdown => {
+                // 'auto' = follow Obsidian locale (default)
+                dropdown.addOption('auto', t('lang.auto'));
+                // Dynamically add one option per registered locale
+                for (const locale of getAvailableLocales()) {
+                    dropdown.addOption(locale.code, locale.label);
+                }
+                dropdown.setValue(this.plugin.settings.language)
+                    .onChange(async (value: LanguageCode) => {
+                        this.plugin.settings.language = value;
+                        setLanguage(value);
+                        await this.plugin.saveSettings();
+                        // Re-render the settings tab in the new language
+                        this.display();
+                    });
+            });
 
         const delayDescr: DocumentFragment = sanitizeHTMLToDom(
             t('settings.delayDesc', {min: DELAY_MIN_SECONDS, max: DELAY_MAX_SECONDS})
