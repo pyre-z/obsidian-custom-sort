@@ -1,51 +1,58 @@
-> > This is a simple version of README which highlights the **basic scenario and most commonly used feature**
+# 自定义文件管理器排序（Custom File Explorer sorting）
+
+> 🌍 **语言 / Language**：[简体中文](README.md) | [English](README.en.md)
 >
-> The [long and much more detailed advanced-README.md is here](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/advanced-README.md)
+> 这是简明版 README，重点介绍**最常用的基本场景**。
+> 更详细的高级文档参见：[advanced-README.md（英文）](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/advanced-README.md)
 
 ---
-## Freely arrange notes and folders in File Explorer (https://obsidian.md plugin)
 
-Take full control of the order of your notes and folders by:
-- **config-driven** sorting with wide variety of options, allowing the fullest range of fine-grained ordering, or
-- **drag and drop** via bookmarks integration.
+## 自由排列文件管理器中的笔记和文件夹（Obsidian 插件）
 
-The simplest usage scenario is to sort items via drag and drop:
+完全掌控笔记和文件夹的显示顺序，支持两种方式：
 
-![Drag and drop ordering simplest example](https://github.com/SebastianMC/obsidian-custom-sort/assets/23032356/25c997e3-c595-448c-a804-5fa9a66bae20)
+- 🥇 **配置驱动（config-driven）排序**：丰富的选项，实现最精细的排序控制
+- 🥈 **拖放排序（drag and drop）**：通过书签（bookmarks）集成实现
 
-Another typical scenario is to apply different sorting order per folder:
+最简单的用法是通过拖放来排序：
 
-![Idea of different sorting order per folder](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/img/different-sorting-order-per-folder.png)
+![拖放排序最简单的例子](https://github.com/SebastianMC/obsidian-custom-sort/assets/23032356/25c997e3-c595-448c-a804-5fa9a66bae20)
 
-For detailed instructions and videos go to [wiki documentation](https://github.com/SebastianMC/obsidian-custom-sort/wiki/How-to-order-items-in-File-Explorer-with-drag-and-drop%3F)
+另一个典型场景是为每个文件夹应用不同的排序顺序：
 
-More advanced capabilities available through config-driven sorting:
-- treat folders and files equally or distinctively, you decide
-- fine-grained folder-level or even notes-group-level specification
-- support for fully manual order
-  - list notes and folders names explicitly in desired order
-  - use prefixes or suffixes notation only for more flexibility
-  - wildcard names matching supported
-  - extract numbers and dates from titles and sort by them
-- group and sort notes and folders by notes custom metadata
-- support for automatic sorting by standard and non-standard rules
-- mixing manual and automatic ordering also supported
-- order by compound numbers in prefix, in suffix (e.g. date in suffix) or inbetween
-- Roman numbers support, also compound Roman numbers
-- grouping by prefix or suffix or prefix and suffix
-  - different sorting rules per group even inside the same folder
-- simple to use yet versatile configuration options
-- configuration stored directly in your note(s) front matter
-  - use a dedicated `sorting-spec:` key in note properties (aka _metadata_ aka  _frontmatter_ aka _YAML_)
-- folders not set up for the custom order remain on the standard Obsidian sorting
-- support for imposing inheritance of order specifications with flexible exclusion and overriding logic
+![不同文件夹应用不同排序顺序](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/img/different-sorting-order-per-folder.png)
+
+详细说明和视频教程参见 [wiki 文档](https://github.com/SebastianMC/obsidian-custom-sort/wiki/How-to-order-items-in-File-Explorer-with-drag-and-drop%3F)
+
+### 配置驱动的更多高级能力
+
+- 文件夹和文件可同等对待，也可区别对待，由你决定
+- 支持文件夹级甚至笔记组级的精细规格
+- 支持完全手动排序
+  - 按期望顺序显式列出笔记和文件夹名称
+  - 仅使用前缀或后缀标记以获得更大灵活性
+  - 支持通配符（wildcard）名称匹配
+  - 从标题中提取数字和日期进行排序
+- 按笔记的自定义元数据分组和排序
+- 支持标准和非标准规则自动排序
+- 手动与自动排序可混合使用
+- 支持复合数字排序（前缀、后缀，如后缀中的日期，或中间位置）
+- 支持罗马数字，包括复合罗马数字
+- 按前缀、后缀或前后缀分组
+  - 即使在同一文件夹内，每个组也可以有不同的排序规则
+- 配置简单但功能多样
+- 配置直接存储在你的笔记 front matter 中
+  - 使用笔记属性（又名 _metadata_ / _frontmatter_ / _YAML_）中的 `sorting-spec:` 键
+- 未配置自定义排序的文件夹保持 Obsidian 标准排序
+- 支持排序规格的继承，并带有灵活的排除和覆盖逻辑
 
 ---
-## Basic scenario 1: set the custom sorting order for a specific folder
 
-Create a new note named `sortspec` in the folder for which you want to configure the sorting
+## 基础场景 1：为特定文件夹设置自定义排序
 
-In the top of the new note put the following YAML front matter text:
+在你想要配置排序的文件夹中创建一个名为 `sortspec` 的新笔记
+
+在新笔记的顶部放入以下 YAML front matter 文本：
 
 ```yaml
 ---
@@ -54,189 +61,187 @@ sorting-spec: |
 ---
 ```
 
-Click the ribbon button (![Inactive](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-inactive.png) or ![Static icon](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-mobile-initial.png) on phone) to tell the plugin to read the sorting specification and apply it.
-The sorting should be applied to the folder. On desktops and tablets the ribbon icon should turn (![Active](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-active.png))
+点击侧边栏图标（![未激活](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-inactive.png)，手机上是 ![静态图标](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-mobile-initial.png)）让插件读取排序规格并应用它。
+排序应应用到该文件夹。在桌面和平板上，侧边栏图标会变成 ![已激活](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-active.png)
 
-!!! **Done!** !!!
+!!! **完成！** !!!
 
-You should see the files and sub-folders in your folder sorted in reverse alphabetical order, folders and files intermixed
+你应该看到文件夹中的文件和子文件夹按逆字母顺序排序，文件夹和文件交错排列
 
-An illustrative image which shows the reverse alphabetical order applied to the root folder of some vault:
+下面的示意图展示了某个 vault 根文件夹应用逆字母顺序后的效果：
 
-![Basic example](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/svg/simplest-example-3.svg)
-
----
-### Remarks
-
-> Remarks:
-> - your new `sortspec` note should [look like this](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/examples/basic/sortspec.md?plain=1) except for the syntax highlighting, which could differ
-> - you will notice that the folders and files are treated equally and thus intermixed
->   - the behavior depends on what files and subfolders you have in your folder
-> - changing the sorting order via the standard Obsidian UI button won't affect your folder, unless...
->   - ...unless you deactivate the custom sorting via clicking the ribbon button to make it ![Inactive](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-inactive.png)
-> - for clarity: the underlying file name of the note `sortspec` is obviously `sortspec.md`
-> - in case of troubles refer to the [TL;DR section of advanced README.md](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/advanced-README.md#tldr-usage)
-> - feel free to experiment! The plugin works in a non-destructive fashion, and it doesn't modify the content of your vault.
->   It only changes the order in which the files and folders are displayed in File Explorer
-> - indentation matters in YAML -> the two leading spaces in `  order-desc: a-z` are intentional and required
-> - this common example only touches the surface of the rich capabilities of this custom sorting plugin. For more details go to [advanced version of README.md](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/advanced-README.md)
+![基础示例](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/svg/simplest-example-3.svg)
 
 ---
-## Basic scenario 2: explicitly list folders and files in the order which you want
 
-This comes from the suggestion by [TheOneLight](https://github.com/TheOneLight) in [this discussion](https://github.com/SebastianMC/obsidian-custom-sort/discussions/95#discussioncomment-7048584)
+### 备注
 
-Take the instructions from the **[Basic scenario 1](#basic-scenario-set-the-custom-sorting-order-for-a-specific-folder)** above and replace the YAML content with:
+> 备注：
+> - 你的新 `sortspec` 笔记应该[长这样](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/examples/basic/sortspec.md?plain=1)，只是语法高亮可能不同
+> - 你会注意到文件夹和文件被同等对待并交错排列
+>   - 具体行为取决于你的文件夹中有哪些文件和子文件夹
+> - 通过 Obsidian 标准 UI 按钮更改排序顺序不会影响你的文件夹，除非...
+>   - ...除非你点击侧边栏图标停用自定义排序，使其变为 ![未激活](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-inactive.png)
+> - 需要明确：笔记 `sortspec` 对应的底层文件名显然是 `sortspec.md`
+> - 遇到问题可参考 [advanced-README.md 的 TL;DR 部分](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/advanced-README.md#tldr-usage)
+> - 放心尝试！插件以非破坏性方式工作，不会修改你 vault 中的任何内容。
+>   它只改变文件管理器中文件和文件夹的显示顺序
+
+---
+
+## 基础场景 2：为文件夹及其子文件夹应用相同排序
+
+假设你的 vault 中有以下文件夹结构：
+
+```
+/
+├── Notes/
+│   ├── 2020/
+│   ├── 2021/
+│   └── 2022/
+├── Projects/
+│   ├── Alpha/
+│   └── Beta/
+└── Archive/
+```
+
+你可以**只创建一个** `sortspec` 笔记放在**根目录**，为所有文件夹应用相同的排序规则：
 
 ```yaml
 ---
 sorting-spec: |
-  My first folder name
-  My second folder name
-  My first file name
-  My second file name
-  // ... and continue so in the desired order
+  target-folder: /*
+  order-asc: a-z
 ---
 ```
 
-This will enforce the order as you listed inside the YAML
+`target-folder: /*` 表示"匹配根文件夹及其所有层级的子文件夹"（整个子树）。子文件夹内的文件也会按此规则排序，除非子文件夹有自己的 `sortspec` 笔记。
+
+只想匹配**直接子文件夹**时用 `/...`：
+
+```yaml
+---
+sorting-spec: |
+  target-folder: /...
+  order-asc: a-z
+---
+```
+
+> 通配符说明：`/*` = 匹配文件夹及其所有子孙（整个子树）；`/...` = 匹配文件夹及其直接子文件夹。
 
 ---
-## Editing multi-line properties in the new YAML properties editor (Obsidian 1.4 and newer)
 
-The newly introduced YAML properties editor (Obsidian 1.4 and newer) can make editing the multi-line text properties tricky and confusing.
-There are short videos here [How to create or edit a multi‐line property in Obsidian?](https://github.com/SebastianMC/obsidian-custom-sort/wiki/How-to-create-or-edit-a-multi%E2%80%90line-property-in-Obsidian%3F) which could be helpful:
-- how to edit the multi-line text properties in Obsidian properties editor (`shift+enter` does the magic here)
-- how to edit the multi-line text properties in Obsidian `source view mode` (the classic way, as you did prior to Obsidian 1.4)
+## 基础场景 3：手动指定精确顺序
+
+有时你想要的是完全手动控制的顺序，直接在 `sorting-spec: |` 下逐行列出项目名称即可：
+
+```yaml
+---
+sorting-spec: |
+    target-folder: /
+    Inbox
+    Projects
+    Archive
+    Templates
+---
+```
+
+文件夹将按你列出的顺序显示：Inbox → Projects → Archive → Templates。未列出的项目将排在最后。
+
+> 注意：只列出部分项目也是可以的，未列出的项目会自动排在后面（除非规格另有说明）。
 
 ---
-## Basic automatic sorting methods
 
-The list of automatic sorting orders includes:
-- `  order-asc: a-z` - **alphabetical order**, aka natural
-  - 'a' goes before 'z' and numbers are treated specifically and 2 goes before 11
-- `  order-desc: a-z` - **reverse alphabetical order**, aka reverse natural, aka descending alphabetical
-  - 'z' goes before 'a' and numbers are treated specifically and 11 goes before 2
-- `  order-asc: true a-z` - **true alphabetical order**
-  - 'a' goes before 'z' and numbers are treated as texts and 11 goes before 2
-- `  order-desc: true a-z` - **true reverse alphabetical order**, aka descending true alphabetical
-  - 'z' goes before 'a' and numbers are treated as texts and 11 goes before 2
-- `  order-asc: created` - **by creation date**
-  - the oldest notes go first. Sub-folders pushed to the top, alphabetically
-- `  order-desc: created` - **by creation date, descending**
-  - the newest notes go first. Sub-folders pushed to the bottom, alphabetically
-- `  order-asc: advanced created` - **by creation date, also for folders**
-  - the oldest notes and sub-folders go first
-  - for sub-folders the creation date of the oldest contained note is taken as folder's creation date
-  - sub-folders not containing any notes are pushed to the top, alphabetically
-- `  order-desc: advanced created` - **by creation date, descending, also for folders**
-  - the newest notes and sub-folders go first
-  - for sub-folders the creation date of the newest contained note is taken as folder's creation date
-  - sub-folders not containing any notes are pushed to the bottom, alphabetically
-- `  order-asc: modified` - **by modification date**
-  - the most dusty notes go first. Sub-folders pushed to the top, alphabetically
-- `  order-desc: modified` - **by modification date, descending**
-  - the most recently modified notes go first. Sub-folders pushed to the bottom, alphabetically
-- `  order-asc: advanced modified` - **by modification date, also for folders**
-  - the most dusty notes and sub-folders go first
-  - for sub-folders the modification date of the most dusty contained note is taken as folder's modification date
-  - sub-folders not containing any notes are pushed to the top, alphabetically
-- `  order-desc: advanced modified` - **by modification date, descending, also for folders**
-  - the most recently modified notes and sub-folders go first
-  - for sub-folders the modification date of the most recently modified contained note is taken as folder's modification date
-  - sub-folders not containing any notes are pushed to the bottom, alphabetically
+## 更多功能
 
-> Remarks:
-> In the above list the `-asc` stems from `Ascending` and `-desc` stems from `Descending`.
-> The `order-desc:` and `order-asc:` can be replaced with more concise `<` and `>` variants, for example `< a-z` instead of `order-asc: a-z`
+### 📌 元数据排序
 
-...and additional orders and modifiers:
-- `standard`, `ui selected` - apply whatever order is selected in Obsidian UI of File Explorer
-- `by-bookmarks-order` - reflect the order of selected group of items in Bookmarks
-- `files-first` or `folders-first` - self explaining
-- `vsc-unicode` or `unicode-charcode` - tricky for geeks
-- `by-metadata:` modifier to use specific metadata for sorting
-- `using-extractor:` in connection with `by-metadata:` to use only part of metadata value, for example a date in specified format
-- `,` separator to specify two levels of sorting. When combining folder-level and group-level sorting this allows for up to 4 sorting levels
-- `advanced recursive modified` or `advanced recursive created` - advanced variants of `advanced modified` and `advanced created`. 
-  Use with care on larger vaults because the deep scanning of folder descendants can have impact on performance on mobile devices
+按笔记 front matter 中的自定义字段排序：
 
-## Patterns to extract numbers or dates from file and folder titles
+```yaml
+---
+sorting-spec: |
+    target-folder: 读书笔记
+    < a-z by-metadata: Pages
+---
+```
 
-- `\R+`, `\.R+` or `\-R+` for Roman numbers
-- `\d+`, `\.d+` or `\-d+` for plain numbers or compound plain numbers
-- `\a+` to extract the last word from title
-- `\[yyyy-mm-dd]`, `\[yyyy-dd-mm]`, `\[dd-Mmm-yyyy]`, `\[mm-dd-yyyy]`, `\[dd-mm-yyyy]`, `\[Mmm-dd-yyyy]`, `\[yyyy-Www (mm-dd)]`, `\[yyyy-Www]` or `\[yyyy-WwwISO]` to extract dates in various formats
+含有 `Pages` 元数据的笔记会排在最前面，按该元数据的值字母排序；没有该元数据的笔记排在后面，默认按字母顺序排列。
 
-## Sorting by note name and note name with file extension
+`by-metadata: <字段名>` 告诉插件按哪个元数据字段排序。
 
-If a folder contains files of various types, e.g. images and .md notes you can extend
-the sorting rules onto file name extensions and, for example, push JPG files before PNG.
-Use the `a-z.` or `true a-z.` syntax to enable that behavior for alphabetical or true alphabetical order.
+### 🏷️ 隐藏项目
 
-## Manual sorting
+在排序中隐藏特定文件或文件夹（需要完整文件名，含扩展名）：
 
-The **manual ordering of notes and folders** can have two meanings:
-- by drag & drop, and this is done via Bookmarks integration, enabled by default, or
-- by explicitly listing files and folders in the desired order. This is done via the sorting configuration.
-Refer to the [TL;DR section of advanced README.md](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/advanced-README.md#tldr-usage) for examples and instructions
+```yaml
+---
+sorting-spec: |
+  /--hide: .DS_Store
+  /--hide: .obsidian
+---
+```
 
-## Ribbon icon
+也可以用简写 `--hide:`。被隐藏的项目不会出现在文件管理器中。
 
-Click the ribbon icon to toggle the plugin between enabled and suspended states.
+### 🔀 组合排序组
 
-States of the ribbon icon on large-screen devices (desktops, laptops and tablets like iPad):
+使用 `/+` 前缀将多个排序组合并为一个逻辑组：
 
-- ![Inactive](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-inactive.png) Custom sorting NOT applied. Plugin suspended or enabled, but the custom sorting was not (yet) applied.
-- ![Active](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-active.png) Plugin active, custom sorting applied.
-- ![Error](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-error.png) Syntax error in custom sorting configuration.
-- ![General Error](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-general-error.png) Plugin suspended. Critical error like File Explorer view not available.
-- ![Static icon](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-mobile-initial.png) (Only on large-screen mobile devices like iPad). 
-  Plugin enabled. but the custom sorting was not applied.
+```yaml
+---
+sorting-spec: |
+  /+ Notes \d\d\d\d
+  /+ Notes \d\d\d\d-\d\d
+   > advanced modified
+---
+```
 
-On small-screen mobile devices (phones) the icon is static:
+`/+` 前缀告诉排序引擎将相邻的 `/+` 组组合起来。上例中，`Notes 2022` 和 `Notes 2022-12` 这类标题会先出现，按修改日期倒序排列，其余文件排在后面。
 
-- ![Static icon](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-mobile-initial.png) The icon acts as a button to toggle between enabled and disabled. Its appearance doesn't change
+---
 
-For more details on the icon states refer to [Ribbon icon section of the advanced-README.md](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/advanced-README.md#ribbon-icon)
+## 🌐 多语言支持（i18n）
 
-## Small screen mobile devices remarks
+本 Fork 新增了 **i18n 多语言支持**：
 
-- you might need to activate the custom sorting on your mobile separately, even if on a shared vault the custom sorting was activated on desktop
-- the Obsidian command palette being easily available (swipe down gesture on small-screen mobiles) allows for quick steering of the plugin via commands: sort-on and sort-off.
-This could be easier than navigating to and expanding the ribbon 
-- the ribbon icon is static (![Static icon](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/icons/icon-mobile-initial.png)) and doesn't reflect the state of custom sorting.
-You can enable the _plugin state changes_ notifications in settings, for the mobile devices only
+- 支持 **简体中文** 和 **English**
+- 默认 **自动跟随 Obsidian 界面语言**（在设置 → 界面语言中可手动切换）
+- 覆盖全部 UI：设置面板、右键菜单、命令、通知、状态栏、解析错误消息
+- 控制台错误日志保持英文，便于与上游文档对照排查
 
-## Installing the plugin
+切换语言：**设置 → 插件选项 → 界面语言（Language）** → 选择「自动 / 简体中文 / English」，立即生效，无需重启。
 
-### From the official Obsidian Community Plugins page
+---
 
-The plugin could and should be installed from the official Obsidian Community Plugins list at https://obsidian.md/plugins
-or directly in the Obsidian app itself.
-Search the plugin by its name 'CUSTOM FILE EXPLORER SORTING'
+## 安装
 
-> For other installation methods refer to [Installing the plugin section of advanced-README.md](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/advanced-README.md#installing-the-plugin)
+### 方法一：Obsidian 社区插件（官方版）
 
-## Credits
+1. 打开 Obsidian → 设置 → 第三方插件 → 关闭安全模式
+2. 浏览社区插件 → 搜索 **"Custom File Explorer sorting"**
+3. 安装并启用
 
-Thanks to [Nothingislost](https://github.com/nothingislost) for the monkey-patching ideas of File Explorer
-in [obsidian-bartender](https://github.com/nothingislost/obsidian-bartender)
+### 方法二：手动安装（本中文/i18n Fork）
 
-## ...and before you go, maybe you'd like the visual separators in File Explorer?
+1. 从 [Releases](../../releases) 或构建产物下载 `main.js`、`manifest.json`、`styles.css`
+2. 放入你的 vault：`.obsidian/plugins/obsidian-custom-sort/`
+3. 在 Obsidian 设置 → 第三方插件中启用
 
-Do you want to have a nice-looking horizontal separators in File Explorer like this?
+### 从源码构建
 
-![separators](https://raw.githubusercontent.com/SebastianMC/obsidian-custom-sort/master/docs/img/separators-by-replete.png)
+```bash
+npm install
+npm run build   # 产物在 dist/main.js
+npm test        # 运行测试（830 个测试全部通过）
+```
 
-If so, head on to [Instruction and more context](https://github.com/SebastianMC/obsidian-custom-sort/discussions/57#discussioncomment-4983763)
-by [@replete](https://github.com/replete)\
-Quick & easy!
+---
 
-This feature is not dependent on the Custom Sorting plugin.
-At the same time I'm mentioning it here because it is a side effect of a discussion with [@replete](https://github.com/replete).
-We were considering a direct support of the Separators in the plugin. Eventually this boiled down to a very
-concise and smart CSS-snippet based solution, independent of the plugin. Go, see, copy to the CSS-snippets in Obsidian
-and enjoy the more grouped look
+## 致谢
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-%23FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/SebastianMC.Obsidian)
+- 原作者：[SebastianMC](https://github.com/SebastianMC)
+- 上游仓库：[SebastianMC/obsidian-custom-sort](https://github.com/SebastianMC/obsidian-custom-sort)
+- 本 Fork：由 [pyre-z](https://github.com/pyre-z) 汉化并添加 i18n 支持，GPL-3.0 许可
+
+更多高级用法、语法参考和故障排查，参见 [advanced-README.md](https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/advanced-README.md)。
