@@ -117,7 +117,7 @@ describe('folderMatch', () => {
 		matcher.addWildcardDefinition('Archive/2020/...', 'First occurrence')
 		const result = matcher.addWildcardDefinition('/Archive/2020/.../', 'Duplicate')
 
-		expect(result).toEqual({errorMsg: "Duplicate wildcard '...' specification for /Archive/2020/.../"})
+		expect(result).toEqual({errorMsg: "通配符 '...' 的规格重复：/Archive/2020/.../"})
 	})
 	it('should accept duplicate match children definitions for same path, if the former comes from implicit spec', () => {
 		const matcher: FolderWildcardMatching<SortingSpec> = new FolderWildcardMatching(checkIfImplicitSpecByPrefix)
@@ -131,7 +131,7 @@ describe('folderMatch', () => {
 		matcher.addWildcardDefinition('/Archive/2019/*', 'First occurrence')
 		const result = matcher.addWildcardDefinition('Archive/2019/*', 'Duplicate')
 
-		expect(result).toEqual({errorMsg: "Duplicate wildcard '*' specification for Archive/2019/*"})
+		expect(result).toEqual({errorMsg: "通配符 '*' 的规格重复：Archive/2019/*"})
 	})
 	it('should accept duplicate match all definitions for same path, if the former comes from implicit spec', () => {
 		const matcher: FolderWildcardMatching<SortingSpec> = new FolderWildcardMatching(checkIfImplicitSpecByPrefix)

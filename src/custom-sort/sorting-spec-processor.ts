@@ -11,6 +11,7 @@ import {
 	RegExpSpec
 } from "./custom-sort-types";
 import {isDefined, last} from "../utils/utils";
+import { t, Translator } from "../i18n";
 import {
 	CompoundNumberDashRegexStr,
 	CompoundNumberDotRegexStr,
@@ -165,10 +166,10 @@ enum Attribute {
 
 type OrderAttribute = Exclude<Attribute, Attribute.TargetFolder>
 
-const SortingOrderSpecInvalid: string = 'Invalid sorting order'
+const SortingOrderSpecInvalid: string = t('err.invalidSortingOrder')
 
 const ErrorMsgForAttribute: { [key in Attribute]: string } = {
-	[Attribute.TargetFolder]: 'Invalid target folder specification',
+	[Attribute.TargetFolder]: t('err.invalidTargetFolder'),
 	[Attribute.OrderAsc]: SortingOrderSpecInvalid,
 	[Attribute.OrderDesc]: SortingOrderSpecInvalid,
 	[Attribute.OrderUnspecified]: SortingOrderSpecInvalid
@@ -905,7 +906,7 @@ const extractIdentifier = (text: string, defaultResult?: string): string | undef
 	return identifier ? identifier : defaultResult
 }
 
-const ADJACENCY_ERROR: string = "Sorting symbol must not be directly adjacent to a wildcard because of potential performance problem. An additional explicit separator helps in such case."
+const ADJACENCY_ERROR: string = t('err.adjacency')
 
 export class SortingSpecProcessor {
 	ctx: ProcessingContext
@@ -922,7 +923,8 @@ export class SortingSpecProcessor {
 
 	// Logger parameter exposed to support unit testing of error cases as well as capturing error messages
 	//  for in-app presentation
-	constructor(private errorLogger?: typeof console.log) {
+	// Translator parameter is injectable to support unit testing with a fixed language
+	constructor(private errorLogger?: typeof console.log, private translator: Translator = t) {
 	}
 
 	// root level parser function
@@ -976,7 +978,7 @@ export class SortingSpecProcessor {
 			}
 			if (!success) {
 				if (!this.problemAlreadyReportedForCurrentLine) {
-					this.problem(ProblemCode.SyntaxError, "Sorting specification line doesn't match any supported syntax")
+					this.problem(ProblemCode.SyntaxError, t('err.syntaxNotSupported'))
 				}
 				break;
 			}
@@ -998,13 +1000,13 @@ export class SortingSpecProcessor {
 							const folderNameToMatch: string = path.substring(MatchFolderNameLexeme.length).trim()
 							if (folderNameToMatch === '') {
 								this.problem(ProblemCode.EmptyFolderNameToMatch,
-									`Empty '${TargetFolderLexeme} ${MatchFolderNameLexeme}' value` )
+									t('err.emptyFolderName', {lexeme: TargetFolderLexeme, matchLexeme: MatchFolderNameLexeme}) )
 								return null // Failure - not allow duplicate by folderNameToMatch specs for the same folder folderNameToMatch
 							}
 							collection = ensureCollectionHasSortSpecByName(collection)
 							if (collection.sortSpecByName![folderNameToMatch]) {
 								this.problem(ProblemCode.DuplicateByNameSortSpecForFolder,
-									`Duplicate '${TargetFolderLexeme} ${MatchFolderNameLexeme}' definition for the same name <${folderNameToMatch}>` )
+									t('err.dupByName', {name: folderNameToMatch, lexeme: TargetFolderLexeme, matchLexeme: MatchFolderNameLexeme}) )
 								return null // Failure - not allow duplicate by folderNameToMatch specs for the same folder folderNameToMatch
 							} else {
 								collection.sortSpecByName![folderNameToMatch] = spec
@@ -1025,7 +1027,7 @@ export class SortingSpecProcessor {
 								collection.sortSpecByWildcard!.addRegexpDefinition(r.regexp, r.againstName, r.priority, r.log, spec)
 							} catch (e) {
 								this.problem(ProblemCode.InvalidOrEmptyFolderMatchingRegexp,
-									`Invalid or empty folder regexp expression <${folderByRegexpExpression}>`)
+									t('err.invalidRegexp', {expr: folderByRegexpExpression}))
 								return null
 							}
 						} else if (endsWithWildcardPatternSuffix(path)) {
@@ -1048,7 +1050,7 @@ export class SortingSpecProcessor {
 							const preexistingSortSpecPriority: WildcardPriority = this.pathMatchPriorityForPath[path]
 							if (preexistingSortSpecPriority) {
 								if (preexistingSortSpecPriority === WildcardPriority.NO_WILDCARD && detectedWildcardPriority === WildcardPriority.NO_WILDCARD) {
-									this.problem(ProblemCode.DuplicateSortSpecForSameFolder, `Duplicate sorting spec for folder ${path}`)
+									this.problem(ProblemCode.DuplicateSortSpecForSameFolder, t('err.dupSortSpec', {path}))
 									return null // Failure - not allow duplicate specs for the same no-wildcard folder path
 								} else if (detectedWildcardPriority >= preexistingSortSpecPriority) {
 									// Ignore lower priority rule
@@ -1076,17 +1078,19 @@ export class SortingSpecProcessor {
 		const hasLineContext: boolean = !ContextFreeProblems.has(code)
 		const lineContext = (hasLineContext) ? ` line ${this.currentEntryLineIdx} of` : ''
 
+		// Console log keeps a stable, developer-friendly format
 		logger(`Sorting specification problem: ${code}:${problemLabel} ${details} ---` +
 			`encountered in${lineContext} sorting spec in file ${this.currentSortingSpecContainerFilePath}`)
-		if (lineContext) {
+		if (hasLineContext) {
 			logger(`Content of problematic line: "${this.currentEntryLine}"`)
 		}
 
+		// recentErrorMessage is user-facing, so it's localized
 		this.recentErrorMessage =
-			`File: ${this.currentSortingSpecContainerFilePath}\n` +
-			(hasLineContext ? `Specification line #${this.currentEntryLineIdx}: "${this.currentEntryLine}"\n` : '') +
-			`Problem: ${code}:${problemLabel}\n` +
-			`Details: ${details}`
+			this.translator('err.file', {path: this.currentSortingSpecContainerFilePath ?? ''}) + '\n' +
+			(hasLineContext ? this.translator('err.line', {line: this.currentEntryLineIdx ?? '', content: this.currentEntryLine ?? ''}) + '\n' : '') +
+			this.translator('err.problem', {code, label: problemLabel}) + '\n' +
+			this.translator('err.details', {details})
 		this.problemAlreadyReportedForCurrentLine = true
 	}
 
@@ -1130,7 +1134,7 @@ export class SortingSpecProcessor {
 					}
 				}
 			} else {
-				this.problem(ProblemCode.MissingAttributeValue, `${ErrorMsgForAttribute[recognizedAttr]}: "${firstLexeme}" requires a value to follow`)
+				this.problem(ProblemCode.MissingAttributeValue, t('err.missingValue', {lexeme: firstLexeme}))
 			}
 		}
 		return null; // Seemingly not an attribute or not a valid attribute expression (respective syntax error could have been logged)
@@ -1151,7 +1155,7 @@ export class SortingSpecProcessor {
 				}
 				return true
 			} else {
-				this.problem(ProblemCode.TargetFolderNestedSpec, `Nested (indented) specification of target folder is not allowed`)
+				this.problem(ProblemCode.TargetFolderNestedSpec, t('err.nestedTargetFolder'))
 				return false
 			}
 		} else if (attr.attribute === Attribute.OrderAsc || attr.attribute === Attribute.OrderDesc || attr.attribute === Attribute.OrderUnspecified) {
@@ -1161,7 +1165,7 @@ export class SortingSpecProcessor {
 				}
 				if (this.ctx.currentSpec.defaultSorting) {
 					const folderPathsForProblemMsg: string = this.ctx.currentSpec.targetFoldersPaths.join(' :: ');
-					this.problem(ProblemCode.DuplicateOrderAttr, `Duplicate order specification for folder(s) ${folderPathsForProblemMsg}`)
+					this.problem(ProblemCode.DuplicateOrderAttr, t('err.dupOrderAttr', {paths: folderPathsForProblemMsg}))
 					return false;
 				}
 				const rs: RecognizedSorting = attr.value  // Syntax sugar
@@ -1170,12 +1174,12 @@ export class SortingSpecProcessor {
 				return true;
 			} else if (attr.nesting > 0) { // For now only distinguishing nested (indented) and not-nested (not-indented), the depth doesn't matter
 				if (!this.ctx.currentSpec || !this.ctx.currentSpecGroup) {
-					this.problem(ProblemCode.DanglingOrderAttr, `Nested (indented) attribute requires prior sorting group definition`)
+					this.problem(ProblemCode.DanglingOrderAttr, t('err.danglingOrderAttr'))
 					return false;
 				}
 				if (this.ctx.currentSpecGroup.sorting) {
 					const folderPathsForProblemMsg: string = this.ctx.currentSpec.targetFoldersPaths.join(' :: ');
-					this.problem(ProblemCode.DuplicateOrderAttr, `Duplicate order specification for a sorting rule of folder ${folderPathsForProblemMsg}`)
+					this.problem(ProblemCode.DuplicateOrderAttr, t('err.dupOrderRule', {paths: folderPathsForProblemMsg}))
 					return false;
 				}
 				const rs: RecognizedSorting = attr.value  // Syntax sugar
@@ -1195,10 +1199,10 @@ export class SortingSpecProcessor {
 			if (lineTrimmedStartLowerCase.startsWith(attrLexeme)) {
 				const originalAttrLexeme: string = lineTrimmedStart.substring(0, attrLexeme.length)
 				if (lineTrimmedStartLowerCase.length === attrLexeme.length) {
-					this.problem(ProblemCode.MissingAttributeValue, `Attribute "${originalAttrLexeme}" requires a value to follow`)
+					this.problem(ProblemCode.MissingAttributeValue, t('err.missingValue', {lexeme: originalAttrLexeme}))
 					return true
 				} else {
-					this.problem(ProblemCode.NoSpaceBetweenAttributeAndValue, `Space required after attribute name "${originalAttrLexeme}"`)
+					this.problem(ProblemCode.NoSpaceBetweenAttributeAndValue, t('err.noSpaceAfterAttr', {lexeme: originalAttrLexeme}))
 					return true
 				}
 			}
@@ -1210,14 +1214,14 @@ export class SortingSpecProcessor {
 		let s: string = line.trim()
 
 		if (hasMoreThanOneSortingSymbol(s)) {
-			this.problem(ProblemCode.TooManySortingSymbols, 'Maximum one sorting symbol allowed per line')
+			this.problem(ProblemCode.TooManySortingSymbols, t('err.tooManySortingSymbols'))
 			return null
 		}
 
 		if (containsThreeDots(s)) {
 			const [prefix, suffix] = s.split(ThreeDots)
 			if (containsThreeDots(prefix) && containsThreeDots(suffix)) {
-				this.problem(ProblemCode.InlineRegexInPrefixAndSuffix, 'In current version, inline regex symbols are not allowed both in prefix and suffix.')
+				this.problem(ProblemCode.InlineRegexInPrefixAndSuffix, t('err.inlineRegexBoth'))
 				return null
 			}
 		}
@@ -1284,43 +1288,43 @@ export class SortingSpecProcessor {
 		}
 
 		if (groupPriorityPrefixesCount > 1) {
-			this.problem(ProblemCode.TooManyPriorityPrefixes, 'Only one priority prefix allowed on sorting group')
+			this.problem(ProblemCode.TooManyPriorityPrefixes, t('err.tooManyPriority'))
 			return null
 		}
 
 		if (s === '' && groupPriority) {
-			this.problem(ProblemCode.PriorityNotAllowedOnOutsidersGroup, 'Priority is not allowed for sorting group with empty match-pattern')
+			this.problem(ProblemCode.PriorityNotAllowedOnOutsidersGroup, t('err.priorityOnOutsiders'))
 			return null
 		}
 
 		if (combineGroupPrefixesCount > 1) {
-			this.problem(ProblemCode.TooManyCombinePrefixes, 'Only one combining prefix allowed on sorting group')
+			this.problem(ProblemCode.TooManyCombinePrefixes, t('err.tooManyCombine'))
 			return null
 		}
 
 		if (s === '' && combineGroup) {
-			this.problem(ProblemCode.CombiningNotAllowedOnOutsidersGroup, 'Combining is not allowed for sorting group with empty match-pattern')
+			this.problem(ProblemCode.CombiningNotAllowedOnOutsidersGroup, t('err.combineOnOutsiders'))
 			return null
 		}
 
 		if (groupTypePrefixesCount > 1) {
-			this.problem(ProblemCode.TooManyGroupTypePrefixes, 'Only one sorting group type prefix allowed on sorting group')
+			this.problem(ProblemCode.TooManyGroupTypePrefixes, t('err.tooManyGroupType'))
 			return null
 		}
 
 		if (priorityPrefixAfterGroupTypePrefix) {
-			this.problem(ProblemCode.PriorityPrefixAfterGroupTypePrefix, 'Priority prefix must be used before sorting group type indicator')
+			this.problem(ProblemCode.PriorityPrefixAfterGroupTypePrefix, t('err.priorityAfterGroupType'))
 			return null
 		}
 
 		if (combinePrefixAfterGroupTypePrefix) {
-			this.problem(ProblemCode.CombinePrefixAfterGroupTypePrefix, 'Combining prefix must be used before sorting group type indicator')
+			this.problem(ProblemCode.CombinePrefixAfterGroupTypePrefix, t('err.combineAfterGroupType'))
 			return null
 		}
 
 		if (s === '' && groupType) { // alone alone alone
 			if (groupType.itemToHide) {
-				this.problem(ProblemCode.ItemToHideExactNameWithExtRequired, 'Exact name with ext of file or folders to hide is required')
+				this.problem(ProblemCode.ItemToHideExactNameWithExtRequired, t('err.hideExactName'))
 				return null
 			} else { // !sortingGroupIndicatorPrefixAlone.itemToHide
 				return {
@@ -1377,7 +1381,7 @@ export class SortingSpecProcessor {
 
 		if (group.itemToHide) {
 			if (!this.consumeParsedItemToHide(group)) {
-				this.problem(ProblemCode.ItemToHideNoSupportForThreeDots, 'For hiding of file or folder, the exact name with ext is required and no sorting symbols allowed')
+				this.problem(ProblemCode.ItemToHideNoSupportForThreeDots, t('err.hideNoSymbols'))
 				return false
 			} else {
 				return true
@@ -1425,21 +1429,21 @@ export class SortingSpecProcessor {
 			if (group.type === CustomSortGroupType.Outsiders) {
 				if (group.filesOnly) {
 					if (isDefined(spec.outsidersFilesGroupIdx)) {
-						console.warn(`Ignoring duplicate Outsiders-files sorting group definition in sort spec for folder '${last(spec.targetFoldersPaths)}'`)
+						console.warn(t('err.dupOutsidersFiles', {folder: last(spec.targetFoldersPaths)}))
 					} else {
 						spec.outsidersFilesGroupIdx = groupIdx
 						outsidersGroupForFiles = true
 					}
 				} else if (group.foldersOnly) {
 					if (isDefined(spec.outsidersFoldersGroupIdx)) {
-						console.warn(`Ignoring duplicate Outsiders-folders sorting group definition in sort spec for folder '${last(spec.targetFoldersPaths)}'`)
+						console.warn(t('err.dupOutsidersFolders', {folder: last(spec.targetFoldersPaths)}))
 					} else {
 						spec.outsidersFoldersGroupIdx = groupIdx
 						outsidersGroupForFolders = true
 					}
 				} else {
 					if (isDefined(spec.outsidersGroupIdx)) {
-						console.warn(`Ignoring duplicate Outsiders sorting group definition in sort spec for folder '${last(spec.targetFoldersPaths)}'`)
+						console.warn(t('err.dupOutsiders', {folder: last(spec.targetFoldersPaths)}))
 					} else {
 						spec.outsidersGroupIdx = groupIdx
 						outsidersGroupForFolders = true
@@ -1449,7 +1453,7 @@ export class SortingSpecProcessor {
 			}
 		}
 		if (isDefined(spec.outsidersGroupIdx) && (isDefined(spec.outsidersFilesGroupIdx) || isDefined(spec.outsidersFoldersGroupIdx))) {
-			console.warn(`Inconsistent Outsiders sorting group definition in sort spec for folder '${last(spec.targetFoldersPaths)}'`)
+			console.warn(t('err.inconsistentOutsiders', {folder: last(spec.targetFoldersPaths)}))
 		}
 		// For consistency and to simplify sorting code later on, implicitly append a single catch-all Outsiders group
 		if (!(outsidersGroupForFiles && outsidersGroupForFolders)) {
@@ -1470,7 +1474,7 @@ export class SortingSpecProcessor {
 				} else {
 					// Ensure that the preceding group doesn't contain sorting order
 					if (spec.groups[i - 1].sorting) {
-						this.problem(ProblemCode.OnlyLastCombinedGroupCanSpecifyOrder, 'Predecessor group of combined group cannot contain order specification. Put it at the last of group in combined groups')
+						this.problem(ProblemCode.OnlyLastCombinedGroupCanSpecifyOrder, t('err.combinedOrder'))
 						return false
 					}
 				}
@@ -1555,7 +1559,7 @@ export class SortingSpecProcessor {
 
 		// Max two levels are supported, excess levels specs are ignored
 		for (let level: number = 0; level <= MAX_SORT_LEVEL && level < sortLevels.length; level++) {
-			let orderNameForErrorMsg = level === 0 ? 'Primary' : 'Secondary'
+			let orderNameForErrorMsg = level === 0 ? t('err.primary') : t('err.secondary')
 			let orderSpec: string = sortLevels[level].trim()
 			let applyToMetadata: boolean = false
 
@@ -1585,7 +1589,7 @@ export class SortingSpecProcessor {
 						if (hasMetadataExtractor) {
 							metadataExtractor = hasMetadataExtractor.m
 						} else {
-							return new AttrError(`${orderNameForErrorMsg} sorting order contains unrecognized value extractor: >>> ${metadataExtractorSpec} <<<`)
+							return new AttrError(t('err.orderUnrecognizedExtractor', {order: orderNameForErrorMsg, text: metadataExtractorSpec}))
 						}
 						orderSpec = '' // all consumed as metadata and extractor
 					} else {
@@ -1600,7 +1604,7 @@ export class SortingSpecProcessor {
 			// check for any superfluous text
 			const superfluousText = orderSpec.trim()||undefined
 			if (superfluousText) {
-				return new AttrError(`${orderNameForErrorMsg} sorting order contains unrecognized text: >>> ${superfluousText} <<<`)
+				return new AttrError(t('err.orderUnrecognizedText', {order: orderNameForErrorMsg, text: superfluousText}))
 			}
 
 			// check consistency of prefix and postfix orders, if both are present
@@ -1608,7 +1612,7 @@ export class SortingSpecProcessor {
 				if (hasDirectionPrefix.attr !== Attribute.OrderUnspecified && hasDirectionPostfix.attr !== Attribute.OrderUnspecified)
 					if (hasDirectionPrefix.attr !== hasDirectionPostfix.attr)
 					{
-						return new AttrError(`${orderNameForErrorMsg} sorting direction ${hasDirectionPrefix.lexeme} and ${hasDirectionPostfix.lexeme} are contradicting`)
+						return new AttrError(t('err.orderDirectionConflict', {order: orderNameForErrorMsg, a: hasDirectionPrefix.lexeme, b: hasDirectionPostfix.lexeme}))
 					}
 			}
 
@@ -1638,7 +1642,7 @@ export class SortingSpecProcessor {
 						order = OrdersSupportedByMetadata[order]
 					}
 					if (!order) {
-						return new AttrError(`Sorting by metadata requires one of alphabetical orders`)
+						return new AttrError(t('err.metadataNeedsAlphabetical'))
 					}
 				}
 			} else {
@@ -1825,7 +1829,7 @@ export class SortingSpecProcessor {
 				}
 			} else {
 				// both are three dots or contain three dots or
-				this.problem(ProblemCode.SyntaxErrorInGroupSpec, "three dots occurring more than once and no more text specified")
+				this.problem(ProblemCode.SyntaxErrorInGroupSpec, t('err.syntaxThreeDots'))
 				return null;
 			}
 		}
@@ -1847,11 +1851,11 @@ export class SortingSpecProcessor {
 				}
 			} else {
 				// both are three dots or three dots occurring more times
-				this.problem(ProblemCode.SyntaxErrorInGroupSpec, "three dots occurring more than once or unrecognized specification of sorting rule")
+				this.problem(ProblemCode.SyntaxErrorInGroupSpec, t('err.syntaxUnrecognized'))
 				return null;
 			}
 		}
-		this.problem(ProblemCode.SyntaxErrorInGroupSpec, "Unrecognized specification of sorting rule")
+		this.problem(ProblemCode.SyntaxErrorInGroupSpec, t('err.unrecognizedRule'))
 		return null;
 	}
 

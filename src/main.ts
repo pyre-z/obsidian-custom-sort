@@ -27,6 +27,7 @@ import {
     SortingSpecProcessor,
     SortSpecsCollection
 } from './custom-sort/sorting-spec-processor';
+import { t, setLanguage, getLanguage } from './i18n';
 import {
 	CustomSortSpec
 } from './custom-sort/custom-sort-types';
@@ -172,17 +173,17 @@ export default class CustomSortPlugin
 
 		if (this.sortSpecCache) {
 			if (anySortingSpecFound) {
-				this.showNotice(`Parsing custom sorting specification SUCCEEDED!`)
+				this.showNotice(t('notice.parseSuccess'))
 			} else {
-				this.showNotice(`No custom sorting spec, will go with implicit sorting (bookmarks-based).`)
+				this.showNotice(t('notice.parseImplicit'))
 			}
 		} else {
 			if (anySortingSpecFound) {
-				errorMessage = errorMessage ? errorMessage : `No valid '${SORTINGSPEC_YAML_KEY}:' key(s) in YAML front matter or multiline YAML indentation error or general YAML syntax error`
+				errorMessage = errorMessage ? errorMessage : t('notice.errNoValidKey', {key: SORTINGSPEC_YAML_KEY})
 			} else {
-				errorMessage = `No custom sorting specification found or only empty specification(s)`
+				errorMessage = t('notice.errNoSpec')
 			}
-			this.showNotice(`Parsing custom sorting specification FAILED. Suspending the plugin.\n${errorMessage}`, ERROR_NOTICE_TIMEOUT)
+			this.showNotice(t('notice.parseFail', {error: errorMessage}), ERROR_NOTICE_TIMEOUT)
 			this.settings.suspended = true
 			this.saveSettings()
 		}
@@ -254,7 +255,7 @@ export default class CustomSortPlugin
 								plugin.customSortAppliedAtLeastOnce = true
 								setTimeout(() => {
 									plugin.setRibbonIconToEnabled.apply(plugin)
-									plugin.showNotice('Custom sort APPLIED.');
+									plugin.showNotice(t('notice.applied'));
 									plugin.updateStatusBar()
 								})
 							}
@@ -299,7 +300,7 @@ export default class CustomSortPlugin
 		const fileExplorer = fileExplorerOrError.v ? this.patchFileExplorer(fileExplorerOrError.v) : undefined
 
 		if (this.settings.suspended) {
-			this.showNotice('Custom sort OFF');
+			this.showNotice(t('notice.off'));
 			this.sortSpecCache = null
 			setIcon(this.ribbonIconEl, ICON_SORT_SUSPENDED)
 			if (fileExplorer) {
@@ -313,10 +314,9 @@ export default class CustomSortPlugin
 					fileExplorer.view.requestSort();
 				} else {
 					if (Platform.isDesktop) {
-						this.showNotice('Custom sort File Explorer view problem. See console for detailed message.')
+						this.showNotice(t('notice.feViewProblem'))
 					} else { // No console access on mobile
-						this.showNotice(`Custom sort File Explorer view problem - is it visible?`
-						+ ` Can't apply custom sorting when the File Explorer was not displayed at least once.`)
+						this.showNotice(t('notice.feViewProblemMobile'))
 					}
 					setIcon(this.ribbonIconEl, ICON_SORT_SUSPENDED_GENERAL_ERROR)
 					this.settings.suspended = true
@@ -343,6 +343,9 @@ export default class CustomSortPlugin
 
 		await this.loadSettings();
 
+		// Initialize i18n language from settings (falls back to auto-detect)
+		setLanguage(this.settings.language ?? 'auto');
+
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		if (this.settings.statusBarEntryEnabled) {
 			this.statusBarItemEl =  this.addStatusBarItem();
@@ -360,7 +363,7 @@ export default class CustomSortPlugin
 				:
 				ICON_SORT_MOBILE_INITIAL // REMARK: on small-screen mobile devices this icon stays permanent
 			,
-			'Toggle custom sorting', (evt: MouseEvent) => {
+			t('ribbon.toggle'), (evt: MouseEvent) => {
 				// Clicking the icon toggles between the states of custom sort plugin
 				this.switchPluginStateTo(this.settings.suspended)
 			});
@@ -381,14 +384,14 @@ export default class CustomSortPlugin
 		const m: boolean = Platform.isMobile
 
 		const applyCustomSortMenuItem = (item: MenuItem) => {
-			item.setTitle(m ? 'Custom sort: apply custom sorting' : 'Apply custom sorting');
+			item.setTitle(m ? t('menu.customSort') + t('menu.apply') : t('menu.apply'));
 			item.onClick(() => {
 				plugin.switchPluginStateTo(true)
 			})
 		};
 
 		const suspendCustomSortMenuItem = (item: MenuItem) => {
-			item.setTitle(m ? 'Custom sort: suspend custom sorting' : 'Suspend custom sorting');
+			item.setTitle(m ? t('menu.customSort') + t('menu.suspend') : t('menu.suspend'));
 			item.onClick(() => {
 				plugin.switchPluginStateTo(false)
 			})
@@ -396,7 +399,7 @@ export default class CustomSortPlugin
 
 		const getBookmarkThisMenuItemForFile = (file: TAbstractFile): ContextMenuProvider =>
 			(item: MenuItem) => {
-				item.setTitle(m ? 'Bookmark it for custom sorting' : 'Bookmark it for sorting');
+				item.setTitle(m ? t('menu.bookmarkThisMobile') : t('menu.bookmarkThis'));
 				item.onClick(() => {
 					const bookmarksPlugin = getBookmarksPlugin(plugin.app, plugin.settings.bookmarksGroupToConsumeAsOrderingReference)
 					if (bookmarksPlugin) {
@@ -408,7 +411,7 @@ export default class CustomSortPlugin
 
 		const getUnbookmarkThisMenuItemForFile = (file: TAbstractFile): ContextMenuProvider =>
 			(item: MenuItem) => {
-				item.setTitle(m ? 'UNbookmark it from custom sorting' : 'UNbookmark it from sorting');
+				item.setTitle(m ? t('menu.unbookmarkThisMobile') : t('menu.unbookmarkThis'));
 				item.onClick(() => {
 					const bookmarksPlugin = getBookmarksPlugin(plugin.app, plugin.settings.bookmarksGroupToConsumeAsOrderingReference)
 					if (bookmarksPlugin) {
@@ -420,7 +423,7 @@ export default class CustomSortPlugin
 
 		const getBookmarkAllMenuItemForFile = (file: TAbstractFile): ContextMenuProvider =>
 			(item: MenuItem) => {
-				item.setTitle(m ? 'Bookmark it+siblings for custom sorting' : 'Bookmark it+siblings for sorting');
+				item.setTitle(m ? t('menu.bookmarkSiblingsMobile') : t('menu.bookmarkSiblings'));
 				item.onClick(() => {
 					const bookmarksPlugin = getBookmarksPlugin(plugin.app, plugin.settings.bookmarksGroupToConsumeAsOrderingReference)
 					if (bookmarksPlugin) {
@@ -433,7 +436,7 @@ export default class CustomSortPlugin
 
 		const getUnbookmarkAllMenuItemForFile = (file: TAbstractFile): ContextMenuProvider =>
 			(item: MenuItem) => {
-				item.setTitle(m ? 'UNbookmark it+siblings from custom sorting' : 'UNbookmark it+siblings from sorting');
+				item.setTitle(m ? t('menu.unbookmarkSiblingsMobile') : t('menu.unbookmarkSiblings'));
 				item.onClick(() => {
 					const bookmarksPlugin = getBookmarksPlugin(plugin.app, plugin.settings.bookmarksGroupToConsumeAsOrderingReference)
 					if (bookmarksPlugin) {
@@ -446,7 +449,7 @@ export default class CustomSortPlugin
 
 		const getBookmarkSelectedMenuItemForFiles = (files: TAbstractFile[]): ContextMenuProvider =>
 			(item: MenuItem) => {
-				item.setTitle(m ? 'Bookmark selected for custom sorting' : 'Custom sort: bookmark selected for sorting');
+				item.setTitle(m ? t('menu.bookmarkSelectedMobile') : t('menu.bookmarkSelected'));
 				item.onClick(() => {
 					const bookmarksPlugin = getBookmarksPlugin(plugin.app, plugin.settings.bookmarksGroupToConsumeAsOrderingReference)
 					if (bookmarksPlugin) {
@@ -460,7 +463,7 @@ export default class CustomSortPlugin
 
 		const getUnbookmarkSelectedMenuItemForFiles = (files: TAbstractFile[]): ContextMenuProvider =>
 			(item: MenuItem) => {
-				item.setTitle(m ? 'UNbookmark selected from custom sorting' : 'Custom sort: UNbookmark selected from sorting');
+				item.setTitle(m ? t('menu.unbookmarkSelectedMobile') : t('menu.unbookmarkSelected'));
 				item.onClick(() => {
 					const bookmarksPlugin = getBookmarksPlugin(plugin.app, plugin.settings.bookmarksGroupToConsumeAsOrderingReference)
 					if (bookmarksPlugin) {
@@ -481,7 +484,7 @@ export default class CustomSortPlugin
 					// In that case flatten the menu.
 					let submenu: Menu|undefined
 					if (item) {
-						item.setTitle('Custom sort:');
+						item.setTitle(t('menu.customSort'));
 						item.setIcon('hashtag');
 						submenu = item.setSubmenu()
 					}
@@ -525,7 +528,7 @@ export default class CustomSortPlugin
 					// In that case flatten the menu.
 					let submenu: Menu|undefined
 					if (item) {
-						item.setTitle('Custom sort:');
+						item.setTitle(t('menu.customSort'));
 						item.setIcon('hashtag');
 						submenu = item.setSubmenu()
 					}
@@ -599,14 +602,14 @@ export default class CustomSortPlugin
 		const plugin: CustomSortPlugin = this
 		this.addCommand({
 			id: 'enable-custom-sorting',
-			name: 'Enable and apply the custom sorting, (re)parsing the sorting configuration first. Sort-on.',
+			name: t('cmd.enable'),
 			callback: () => {
 				plugin.switchPluginStateTo(true)
 			}
 		});
 		this.addCommand({
 			id: 'suspend-custom-sorting',
-			name: 'Suspend the custom sorting. Sort-off.',
+			name: t('cmd.suspend'),
 			callback: () => {
 				plugin.switchPluginStateTo(false)
 			}
@@ -691,7 +694,7 @@ export default class CustomSortPlugin
 	updateStatusBar() {
 		if (this.statusBarItemEl) {
 			let status = (!this.settings.suspended && this.customSortAppliedAtLeastOnce) ? 'ON' : 'OFF'
-			this.statusBarItemEl.setText(`Custom sort:${status}`)
+			this.statusBarItemEl.setText(status === 'ON' ? t('status.on') : t('status.off'))
 		}
 	}
 

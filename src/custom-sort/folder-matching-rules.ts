@@ -1,3 +1,5 @@
+import { t } from "../i18n";
+
 export type DeterminedSortingSpec<SortingSpec> = {
 	spec?: SortingSpec
 }
@@ -74,13 +76,13 @@ export class FolderWildcardMatching<SortingSpec> {
 		})
 		if (lastComponent === MATCH_CHILDREN_PATH_TOKEN) {
 			if (leafNode.matchChildren && !this.checkIfImplicitSpec(leafNode.matchChildren)) {
-				return {errorMsg: `Duplicate wildcard '${lastComponent}' specification for ${wilcardDefinition}`}
+				return {errorMsg: t('err.dupWildcard', {wc: lastComponent, spec: wilcardDefinition})}
 			} else {
 				leafNode.matchChildren = rule
 			}
 		} else { // Implicitly: MATCH_ALL_PATH_TOKEN
 			if (leafNode.matchAll && !this.checkIfImplicitSpec(leafNode.matchAll)) {
-				return {errorMsg: `Duplicate wildcard '${lastComponent}' specification for ${wilcardDefinition}`}
+				return {errorMsg: t('err.dupWildcard', {wc: lastComponent, spec: wilcardDefinition})}
 			} else {
 				leafNode.matchAll = rule
 			}

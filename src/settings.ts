@@ -1,6 +1,7 @@
 import {App, normalizePath, PluginSettingTab, sanitizeHTMLToDom, Setting} from "obsidian";
 import {groupNameForPath} from "./utils/BookmarksCorePluginSignature";
 import CustomSortPlugin from "./main";
+import { t, LanguageCode, setLanguage } from "./i18n";
 
 export interface CustomSortPluginSettings {
     additionalSortspecFile: string
@@ -14,6 +15,7 @@ export interface CustomSortPluginSettings {
     bookmarksContextMenus: boolean
     bookmarksGroupToConsumeAsOrderingReference: string
     delayForInitialApplication: number // miliseconds
+    language: LanguageCode
 }
 
 const MILIS = 1000
@@ -33,7 +35,8 @@ export const DEFAULT_SETTINGS: CustomSortPluginSettings = {
     automaticBookmarksIntegration: false,
     bookmarksContextMenus: false,
     bookmarksGroupToConsumeAsOrderingReference: 'sortspec',
-    delayForInitialApplication: DEFAULT_DELAY
+    delayForInitialApplication: DEFAULT_DELAY,
+    language: 'auto'
 }
 
 // On API 1.2.x+ enable the bookmarks integration by default
@@ -59,21 +62,29 @@ export class CustomSortSettingTab extends PluginSettingTab {
 
         containerEl.empty();
 
+        // Language selection (appears at the top so users can switch immediately)
+        new Setting(containerEl)
+            .setName(t('settings.languageName'))
+            .setDesc(t('settings.languageDesc'))
+            .addDropdown(dropdown => dropdown
+                .addOption('auto', t('lang.auto'))
+                .addOption('zh', t('lang.zh'))
+                .addOption('en', t('lang.en'))
+                .setValue(this.plugin.settings.language)
+                .onChange(async (value: LanguageCode) => {
+                    this.plugin.settings.language = value;
+                    setLanguage(value);
+                    await this.plugin.saveSettings();
+                    // Re-render the settings tab in the new language
+                    this.display();
+                }));
+
         const delayDescr: DocumentFragment = sanitizeHTMLToDom(
-            'Number of seconds to wait before applying custom ordering on plugin / app start.'
-            + '<br>'
-            + 'For large vaults, multi-plugin vaults or on mobile the value might need to be increased if you encounter issues with auto-applying'
-            + ' of custom ordering on start. The delay gives Obsidian additional time to sync notes from cloud storages, to populate notes metadata caches,'
-            + ' etc.'
-            + '<br>'
-            + 'At the same time if your vault is relatively small or only used on desktop, or not synced with other copies,'
-            + ' decreasing the delay to 0 could be a safe option.'
-            + '<br>'
-            + `Min: ${DELAY_MIN_SECONDS} sec., max. ${DELAY_MAX_SECONDS} sec.`
+            t('settings.delayDesc', {min: DELAY_MIN_SECONDS, max: DELAY_MAX_SECONDS})
         )
 
         new Setting(containerEl)
-            .setName('Delay for initial automatic application of custom ordering')
+            .setName(t('settings.delayName'))
             .setDesc(delayDescr)
             .addText(text => text
                 .setValue(`${this.plugin.settings.delayForInitialApplication/MILIS}`)
@@ -86,19 +97,14 @@ export class CustomSortSettingTab extends PluginSettingTab {
                 }))
 
         const additionalSortspecFileDescr: DocumentFragment = sanitizeHTMLToDom(
-            'A note name or note path to scan (YAML frontmatter) for sorting specification in addition to the `sortspec` notes and Folder Notes.'
-            + '<br>'
-            + ' The `.md` filename suffix is optional.'
-            + '<br>'
-            + '<p>NOTE: After updating this setting remember to refresh the custom sorting via clicking on the ribbon icon or via the <b>sort-on</b> command'
-            + ' or by restarting Obsidian or reloading the vault</p>'
+            t('settings.additionalFileDesc')
         )
 
         new Setting(containerEl)
-            .setName('Path or name of additional note(s) containing sorting specification')
+            .setName(t('settings.additionalFileName'))
             .setDesc(additionalSortspecFileDescr)
             .addText(text => text
-                .setPlaceholder('e.g. sorting-configuration')
+                .setPlaceholder(t('settings.additionalFilePlaceholder'))
                 .setValue(this.plugin.settings.additionalSortspecFile)
                 .onChange(async (value) => {
                     this.plugin.settings.additionalSortspecFile = value.trim() ? normalizePath(value) : '';
@@ -106,26 +112,14 @@ export class CustomSortSettingTab extends PluginSettingTab {
                 }));
 
         const indexNoteNameDescr: DocumentFragment = sanitizeHTMLToDom(
-            'If you employ the <i>Index-File based</i> approach to folder notes (as documented in '
-            + '<a href="https://github.com/aidenlx/alx-folder-note/wiki/folder-note-pref"'
-            + '>Aidenlx Folder Note preferences</a>'
-            + ') enter here the index note name, e.g. <b>_about_</b> or <b>index</b>'
-            + '<br>'
-            + ' The `.md` filename suffix is optional.'
-            + '<br>'
-            + 'This will tell the plugin to read sorting specs and also folders metadata from these files.'
-            + '<br>'
-            + 'The <i>Inside Folder, with Same Name Recommended</i> mode of Folder Notes is handled automatically, no additional configuration needed.'
-            + '</p>'
-            + '<p>NOTE: After updating this setting remember to refresh the custom sorting via clicking on the ribbon icon or via the <b>sort-on</b> command'
-            + ' or by restarting Obsidian or reloading the vault</p>'
+            t('settings.indexNoteDesc')
         )
 
         new Setting(containerEl)
-            .setName('Name of index note (Folder Notes support)')
+            .setName(t('settings.indexNoteName'))
             .setDesc(indexNoteNameDescr)
             .addText(text => text
-                .setPlaceholder('e.g. _about_ or index')
+                .setPlaceholder(t('settings.indexNotePlaceholder'))
                 .setValue(this.plugin.settings.indexNoteNameForFolderNotes)
                 .onChange(async (value) => {
                     this.plugin.settings.indexNoteNameForFolderNotes = value.trim() ? normalizePath(value) : '';
@@ -133,8 +127,8 @@ export class CustomSortSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Enable the status bar entry')
-            .setDesc('The status bar entry shows the label `Custom sort:ON` or `Custom sort:OFF`, representing the current state of the plugin.')
+            .setName(t('settings.statusBarEntryName'))
+            .setDesc(t('settings.statusBarEntryDesc'))
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.statusBarEntryEnabled)
                 .onChange(async (value) => {
@@ -157,11 +151,8 @@ export class CustomSortSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Enable notifications of plugin state changes')
-            .setDesc('The plugin can show notifications about its state changes: e.g. when successfully parsed and applied'
-                + ' the custom sorting specification, or, when the parsing failed. If the notifications are disabled,'
-                + ' the only indicator of plugin state is the ribbon button icon. The developer console presents the parsing'
-                + ' error messages regardless if the notifications are enabled or not.')
+            .setName(t('settings.notificationsName'))
+            .setDesc(t('settings.notificationsDesc'))
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.notificationsEnabled)
                 .onChange(async (value) => {
@@ -170,8 +161,8 @@ export class CustomSortSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Enable notifications of plugin state changes for mobile devices only')
-            .setDesc('See above.')
+            .setName(t('settings.mobileNotificationsName'))
+            .setDesc(t('settings.mobileNotificationsDesc'))
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.mobileNotificationsEnabled)
                 .onChange(async (value) => {
@@ -180,8 +171,8 @@ export class CustomSortSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Enable File Explorer context submenu`Custom sort:`')
-            .setDesc('Gives access to operations relevant for custom sorting, e.g. applying custom sorting.')
+            .setName(t('settings.contextSubmenuName'))
+            .setDesc(t('settings.contextSubmenuDesc'))
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.customSortContextSubmenu)
                 .onChange(async (value) => {
@@ -189,27 +180,13 @@ export class CustomSortSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
-        containerEl.createEl('h2', {text: 'Bookmarks integration'});
+        containerEl.createEl('h2', {text: t('settings.bookmarksHeader')});
         const bookmarksIntegrationDescription: DocumentFragment = sanitizeHTMLToDom(
-            'If enabled, order of files and folders in File Explorer will reflect the order '
-            + 'of bookmarked items in the bookmarks (core plugin) view. Automatically, without any '
-            + 'need for sorting configuration. At the same time, it integrates seamlessly with'
-            + ' <pre style="display: inline;">sorting-spec:</pre> configurations and they can nicely cooperate.'
-            + '<br>'
-            + '<p>To separate regular bookmarks from the bookmarks created for sorting, you can put '
-            + 'the latter in a separate dedicated bookmarks group. The default name of the group is '
-            + "'<i>" + DEFAULT_SETTINGS.bookmarksGroupToConsumeAsOrderingReference + "</i>' "
-            + 'and you can change the group name in the configuration field below.'
-            + '<br>'
-            + 'If left empty, all the bookmarked items will be used to impose the order in File Explorer.</p>'
-            + '<p>More information on this functionality in the '
-            + '<a href="https://github.com/SebastianMC/obsidian-custom-sort/blob/master/docs/manual.md#bookmarks-plugin-integration">'
-            + 'manual</a> of this custom-sort plugin.'
-            + '</p>'
+            t('settings.bookmarksIntegrationDesc', {defaultGroup: DEFAULT_SETTINGS.bookmarksGroupToConsumeAsOrderingReference})
         )
 
         new Setting(containerEl)
-            .setName('Automatic integration with core Bookmarks plugin (for indirect drag & drop ordering)')
+            .setName(t('settings.bookmarksIntegrationName'))
             .setDesc(bookmarksIntegrationDescription)
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.automaticBookmarksIntegration)
@@ -219,10 +196,10 @@ export class CustomSortSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Name of the group in Bookmarks from which to read the order of items')
-            .setDesc('See above.')
+            .setName(t('settings.bookmarksGroupName'))
+            .setDesc(t('settings.bookmarksGroupDesc'))
             .addText(text => text
-                .setPlaceholder('e.g. Group for sorting')
+                .setPlaceholder(t('settings.bookmarksGroupPlaceholder'))
                 .setValue(this.plugin.settings.bookmarksGroupToConsumeAsOrderingReference)
                 .onChange(async (value) => {
                     value = groupNameForPath(value.trim()).trim()
@@ -231,11 +208,10 @@ export class CustomSortSettingTab extends PluginSettingTab {
                 }));
 
         const bookmarksIntegrationContextMenusDescription: DocumentFragment = sanitizeHTMLToDom(
-            'Enable <i>Custom-sort: bookmark for sorting</i> and <i>Custom-sort: bookmark+siblings for sorting</i> (and related) entries '
-            + 'in context menu in File Explorer'
+            t('settings.bookmarksContextMenusDesc')
         )
         new Setting(containerEl)
-            .setName('Context menus for Bookmarks integration')
+            .setName(t('settings.bookmarksContextMenusName'))
             .setDesc(bookmarksIntegrationContextMenusDescription)
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.bookmarksContextMenus)

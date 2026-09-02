@@ -2697,14 +2697,14 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		const result = processor.parseSortSpecFromText(inputTxtArr, 'mock-folder', 'custom-name-note.md')
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(1)
-		expect(errorsLogger).toHaveBeenCalledWith(`${ERR_PREFIX} 2:DuplicateSortSpecForSameFolder Duplicate sorting spec for folder AAA ${ERR_SUFFIX}`)
+		expect(errorsLogger).toHaveBeenCalledWith(`${ERR_PREFIX} 2:DuplicateSortSpecForSameFolder 文件夹 AAA 的排序规格重复 ${ERR_SUFFIX}`)
 	})
 	it('should recognize error: no space before target folder name ', () => {
 		const inputTxtArr: Array<string> = txtInputErrorMissingSpaceTargetFolderAttr.split('\n')
 		const result = processor.parseSortSpecFromText(inputTxtArr, 'mock-folder', 'custom-name-note.md')
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
-		expect(errorsLogger).toHaveBeenNthCalledWith(1, `${ERR_PREFIX} 6:NoSpaceBetweenAttributeAndValue Space required after attribute name "target-folder:" ${ERR_SUFFIX_IN_LINE(2)}`)
+		expect(errorsLogger).toHaveBeenNthCalledWith(1, `${ERR_PREFIX} 6:NoSpaceBetweenAttributeAndValue 属性名称 "target-folder:" 后需要空格 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger
 		).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('target-folder:AAA'))
 	})
@@ -2714,7 +2714,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 5:MissingAttributeValue Attribute "target-folder:" requires a value to follow ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 5:MissingAttributeValue 属性 "target-folder:" 后需要跟一个值 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('target-folder:'))
 	})
 	it('should recognize error: no value for target folder attr (space only)', () => {
@@ -2723,7 +2723,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 5:MissingAttributeValue Invalid target folder specification: "TARGET-FOLDER:" requires a value to follow ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 5:MissingAttributeValue 属性 "TARGET-FOLDER:" 后需要跟一个值 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('TARGET-FOLDER: '))
 	})
 	it('should recognize error: no value for ascending sorting attr (space only)', () => {
@@ -2732,7 +2732,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 5:MissingAttributeValue Invalid sorting order: "ORDER-ASC:" requires a value to follow ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 5:MissingAttributeValue 属性 "ORDER-ASC:" 后需要跟一个值 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('ORDER-ASC: '))
 	})
 	it('should recognize error: invalid value for descending sorting attr (space only)', () => {
@@ -2741,7 +2741,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Primary sorting order contains unrecognized text: >>> definitely not correct <<< ${ERR_SUFFIX_IN_LINE(3)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 主排序顺序包含无法识别的文本：>>> definitely not correct <<< ${ERR_SUFFIX_IN_LINE(3)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT(' > definitely not correct'))
 	})
 	it('should recognize error: no space before value for descending sorting attr (space only)', () => {
@@ -2750,7 +2750,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 6:NoSpaceBetweenAttributeAndValue Space required after attribute name "Order-DESC:" ${ERR_SUFFIX_IN_LINE(3)}`)
+			`${ERR_PREFIX} 6:NoSpaceBetweenAttributeAndValue 属性名称 "Order-DESC:" 后需要空格 ${ERR_SUFFIX_IN_LINE(3)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('Order-DESC:MODIFIED'))
 	})
 	it('should recognize error: item to hide requires exact name with ext', () => {
@@ -2759,7 +2759,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 11:ItemToHideExactNameWithExtRequired Exact name with ext of file or folders to hide is required ${ERR_SUFFIX_IN_LINE(3)}`)
+			`${ERR_PREFIX} 11:ItemToHideExactNameWithExtRequired 需要提供要隐藏的文件或文件夹的完整名称（含扩展名） ${ERR_SUFFIX_IN_LINE(3)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('--%'))
 	})
 	it('should recognize error: too many numeric sorting indicators in a line', () => {
@@ -2768,7 +2768,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 9:TooManySortingSymbols Maximum one sorting symbol allowed per line ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 9:TooManySortingSymbols 每行最多允许一个排序符号 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('% Chapter\\R+ ... page\\d+ '))
 	})
 	/* Problem no longer applicable
@@ -2790,7 +2790,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup Priority is not allowed for sorting group with empty match-pattern ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup 空匹配模式的排序组不允许设置优先级 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/!'))
 	})
 	it('should recognize error: multiple priority indicators alone', () => {
@@ -2801,7 +2801,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 16:TooManyPriorityPrefixes Only one priority prefix allowed on sorting group ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 16:TooManyPriorityPrefixes 排序组上只允许一个优先级前缀 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/! /!! /!!!'))
 	})
 	it('should recognize error: multiple priority indicators', () => {
@@ -2812,7 +2812,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 16:TooManyPriorityPrefixes Only one priority prefix allowed on sorting group ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 16:TooManyPriorityPrefixes 排序组上只允许一个优先级前缀 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/!!! /!!! Abc\.d+ ...'))
 	})
 	it('should recognize error: priority indicator with empty file pattern', () => {
@@ -2821,7 +2821,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup Priority is not allowed for sorting group with empty match-pattern ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup 空匹配模式的排序组不允许设置优先级 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/!! /:'))
 	})
 	it('should recognize error: priority indicator with empty folder pattern', () => {
@@ -2830,7 +2830,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup Priority is not allowed for sorting group with empty match-pattern ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup 空匹配模式的排序组不允许设置优先级 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/!!! /'))
 	})
 	it('should recognize error: priority indicator with empty pattern', () => {
@@ -2839,7 +2839,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup Priority is not allowed for sorting group with empty match-pattern ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup 空匹配模式的排序组不允许设置优先级 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/! %'))
 	})
 	it('should recognize error of combining: sorting order on first group', () => {
@@ -2852,7 +2852,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(1)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 20:OnlyLastCombinedGroupCanSpecifyOrder Predecessor group of combined group cannot contain order specification. Put it at the last of group in combined groups ${ERR_SUFFIX}`)
+			`${ERR_PREFIX} 20:OnlyLastCombinedGroupCanSpecifyOrder 合并组的前驱组不能包含顺序规格。请将其放在合并组中组的最后 ${ERR_SUFFIX}`)
 	})
 	it('should recognize error of combining: sorting order not on last group', () => {
 		const inputTxtArr: Array<string> = `
@@ -2866,7 +2866,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(1)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 20:OnlyLastCombinedGroupCanSpecifyOrder Predecessor group of combined group cannot contain order specification. Put it at the last of group in combined groups ${ERR_SUFFIX}`)
+			`${ERR_PREFIX} 20:OnlyLastCombinedGroupCanSpecifyOrder 合并组的前驱组不能包含顺序规格。请将其放在合并组中组的最后 ${ERR_SUFFIX}`)
 	})
 	it('should recognize error of combining: combining not allowed for outsiders group', () => {
 		const inputTxtArr: Array<string> = `
@@ -2876,7 +2876,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 17:CombiningNotAllowedOnOutsidersGroup Combining is not allowed for sorting group with empty match-pattern ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 17:CombiningNotAllowedOnOutsidersGroup 空匹配模式的排序组不允许合并 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/+ %'))
 	})
 	it('should recognize error of combining: combining not allowed for outsiders priority group', () => {
@@ -2887,7 +2887,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup Priority is not allowed for sorting group with empty match-pattern ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 15:PriorityNotAllowedOnOutsidersGroup 空匹配模式的排序组不允许设置优先级 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/+ /! /'))
 	})
 	it('should recognize error of combining: multiple combine operators', () => {
@@ -2898,7 +2898,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 18:TooManyCombinePrefixes Only one combining prefix allowed on sorting group ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 18:TooManyCombinePrefixes 排序组上只允许一个合并前缀 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/+ /! /+ /: Something'))
 	})
 	it('should recognize error: too many sorting group type prefixes', () => {
@@ -2909,7 +2909,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 21:TooManyGroupTypePrefixes Only one sorting group type prefix allowed on sorting group ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 21:TooManyGroupTypePrefixes 排序组上只允许一个排序组类型前缀 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/folders /:files Hello'))
 	})
 	it('should recognize error: priority prefix after sorting group type prefixe', () => {
@@ -2920,7 +2920,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 22:PriorityPrefixAfterGroupTypePrefix Priority prefix must be used before sorting group type indicator ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 22:PriorityPrefixAfterGroupTypePrefix 优先级前缀必须用在排序组类型指示符之前 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/folders /+ /! Hello'))
 	})
 	it('should recognize error: combine prefix after sorting group type prefix', () => {
@@ -2931,7 +2931,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 23:CombinePrefixAfterGroupTypePrefix Combining prefix must be used before sorting group type indicator ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 23:CombinePrefixAfterGroupTypePrefix 合并前缀必须用在排序组类型指示符之前 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('/folders /+ Hello'))
 	})
 	it('should recognize empty spec', () => {
@@ -2951,7 +2951,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 10:SortingSymbolAdjacentToWildcard Sorting symbol must not be directly adjacent to a wildcard because of potential performance problem. An additional explicit separator helps in such case. ${ERR_SUFFIX_IN_LINE(1)}`)
+			`${ERR_PREFIX} 10:SortingSymbolAdjacentToWildcard 排序符号不能直接紧挨着通配符，因为可能导致性能问题。在这种情况下，额外的显式分隔符会有所帮助。 ${ERR_SUFFIX_IN_LINE(1)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT(s))
 	})
 	it.each([
@@ -2973,7 +2973,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(1)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 27:InvalidOrEmptyFolderMatchingRegexp Invalid or empty folder regexp expression <> ${ERR_SUFFIX}`)
+			`${ERR_PREFIX} 27:InvalidOrEmptyFolderMatchingRegexp 文件夹正则表达式无效或为空 <> ${ERR_SUFFIX}`)
 	})
 	it('should recognize error in regexp of target-folder:', () => {
 		const inputTxtArr: Array<string> = `
@@ -2983,7 +2983,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(1)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 27:InvalidOrEmptyFolderMatchingRegexp Invalid or empty folder regexp expression <bla (> ${ERR_SUFFIX}`)
+			`${ERR_PREFIX} 27:InvalidOrEmptyFolderMatchingRegexp 文件夹正则表达式无效或为空 <bla (> ${ERR_SUFFIX}`)
 	})
 	it('should recognize empty name in target-folder: name:', () => {
 		const inputTxtArr: Array<string> = `
@@ -2993,7 +2993,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(1)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 26:EmptyFolderNameToMatch Empty 'target-folder: name:' value ${ERR_SUFFIX}`)
+			`${ERR_PREFIX} 26:EmptyFolderNameToMatch 'target-folder: name:' 值为空 ${ERR_SUFFIX}`)
 	})
 	it('should recognize duplicate name in target-folder: name:', () => {
 		const inputTxtArr: Array<string> = `
@@ -3005,7 +3005,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(1)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 25:DuplicateByNameSortSpecForFolder Duplicate 'target-folder: name:' definition for the same name <123> ${ERR_SUFFIX}`)
+			`${ERR_PREFIX} 25:DuplicateByNameSortSpecForFolder 同一名称 <123> 的 'target-folder: name:' 定义重复 ${ERR_SUFFIX}`)
 	})
 	it('should recognize unsupported order for by-metadata: (regular orders)', () => {
 		const inputTxtArr: Array<string> = `
@@ -3015,7 +3015,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Sorting by metadata requires one of alphabetical orders ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 按元数据排序需要使用字母顺序之一 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('< modified by-metadata:'))
 	})
 	it('should recognize unsupported order for by-metadata: (ui selected order)', () => {
@@ -3026,7 +3026,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Sorting by metadata requires one of alphabetical orders ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 按元数据排序需要使用字母顺序之一 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('< ui selected by-metadata:'))
 	})
 	it('should reject superfluous unrecognized text case A', () => {
@@ -3037,7 +3037,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Secondary sorting order contains unrecognized text: >>> ui-selected <<< ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 次排序顺序包含无法识别的文本：>>> ui-selected <<< ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('sorting: standard, sorting: ui-selected'))
 	})
 	it('should reject "sorting" as postfix (comment ignored)', () => {
@@ -3048,7 +3048,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Secondary sorting order contains unrecognized text: >>> sorting <<< ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 次排序顺序包含无法识别的文本：>>> sorting <<< ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('sorting: a-z, a-z sorting  // <- reject postfix notation'))
 	})
 	it('should reject "order-desc:" as postfix (colon is not needed)', () => {
@@ -3059,7 +3059,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Primary sorting order contains unrecognized text: >>> : by-metadata: <<< ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 主排序顺序包含无法识别的文本：>>> : by-metadata: <<< ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('order-desc: true a-z order-desc: by-metadata:'))
 	})
 	it('should reject "order-asc:" as postfix (colon is not needed)', () => {
@@ -3070,7 +3070,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Secondary sorting order contains unrecognized text: >>> : <<< ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 次排序顺序包含无法识别的文本：>>> : <<< ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('order-desc: modified, a-z order-asc:'))
 	})
 	it('should reject "order-asc:" as postfix (colon is not needed) - comment is involved', () => {
@@ -3081,7 +3081,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Secondary sorting order contains unrecognized text: >>> : <<< ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 次排序顺序包含无法识别的文本：>>> : <<< ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('order-desc: modified, a-z order-asc:   // Comment intentionally here, some spaces, some comma'))
 	})
 	it('should reject inconsistent prefix and postfix orders', () => {
@@ -3092,7 +3092,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Secondary sorting direction order-asc: and desc are contradicting ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 次排序方向 order-asc: 与 desc 相互矛盾 ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('sorting: standard, order-asc: modified desc by-metadata: xyz // <-- and it is checked earlier than the by-metadata incompatible order'))
 	})
 	it('should reject unknown value extractor', () => {
@@ -3103,7 +3103,7 @@ describe('SortingSpecProcessor error detection and reporting', () => {
 		expect(result).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(2)
 		expect(errorsLogger).toHaveBeenNthCalledWith(1,
-			`${ERR_PREFIX} 7:InvalidAttributeValue Primary sorting order contains unrecognized value extractor: >>> date(mm/dd/YYYY) <<< ${ERR_SUFFIX_IN_LINE(2)}`)
+			`${ERR_PREFIX} 7:InvalidAttributeValue 主排序顺序包含无法识别的值提取器：>>> date(mm/dd/YYYY) <<< ${ERR_SUFFIX_IN_LINE(2)}`)
 		expect(errorsLogger).toHaveBeenNthCalledWith(2, ERR_LINE_TXT('< a-z. by-metadata: created by using-extractor: date(mm/dd/YYYY)'))
 	})
 })
@@ -3122,7 +3122,7 @@ describe('SortingSpecProcessor advanced error detection', () => {
 		expect(result1).not.toBeNull()
 		expect(result2).toBeNull()
 		expect(errorsLogger).toHaveBeenCalledTimes(1)
-		expect(errorsLogger).toHaveBeenCalledWith(`${ERR_PREFIX} 2:DuplicateSortSpecForSameFolder Duplicate sorting spec for folder CCC ${ERR_SUFFIX}`)
+		expect(errorsLogger).toHaveBeenCalledWith(`${ERR_PREFIX} 2:DuplicateSortSpecForSameFolder 文件夹 CCC 的排序规格重复 ${ERR_SUFFIX}`)
 	})
 })
 
