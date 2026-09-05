@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-custom-sort",
-	"version": "3.1.6",
+	"version": "3.1.6-zh.2",
 	"description": "Custom Sort plugin for Obsidian (https://obsidian.md)",
 	"main": "main.js",
 	"scripts": {
@@ -13,7 +13,7 @@
 		"obsidian",
 		"custom sorting"
 	],
-	"author": "SebastianMC",
+	"author": "SebastianMC, PyreZ",
 	"repository": "https://github.com/SebastianMC/obsidian-custom-sort",
 	"license": "MIT",
 	"devDependencies": {

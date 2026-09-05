@@ -102,12 +102,30 @@ export default class CustomSortPlugin
 	sortSpecCache?: SortSpecsCollection | null
 	customSortAppliedAtLeastOnce: boolean = false
 
+	// Obsidian may emit several modify events while a note is being saved.
+	sortSpecReloadTimer: number | null = null
+
 	uninstallerOfFileExplorerPatch: MonkeyAroundUninstaller|undefined = undefined
 
 	showNotice(message: string, timeout?: number) {
 		if (this.settings.notificationsEnabled || (Platform.isMobile && this.settings.mobileNotificationsEnabled)) {
 			new Notice(message, timeout)
 		}
+	}
+
+	isPotentialSortingSpecFile(file: TFile): boolean {
+		const parent: TFolder | null = file.parent
+		if (!parent) return false
+
+		return file.name === SORTSPEC_FILE_NAME ||
+			file.name === `${SORTSPEC_FILE_NAME}.md` ||
+			file.basename === parent.name ||
+			file.basename === this.settings.additionalSortspecFile ||
+			file.name === this.settings.additionalSortspecFile ||
+			file.path === this.settings.additionalSortspecFile ||
+			file.path === `${this.settings.additionalSortspecFile}.md` ||
+			file.basename === this.settings.indexNoteNameForFolderNotes ||
+			file.name === this.settings.indexNoteNameForFolderNotes
 	}
 
 	readAndParseSortingSpec() {
@@ -140,18 +158,7 @@ export default class CustomSortPlugin
 				// - the file(s) explicitly configured by user in plugin settings
 				// Be human-friendly and accept both .md and .md.md file extensions
 				//     (the latter representing a typical confusion between note name vs underlying file name)
-				if (aFile.name === SORTSPEC_FILE_NAME ||                         // file name == sortspec.md ?
-					aFile.name === `${SORTSPEC_FILE_NAME}.md` ||                 // file name == sortspec.md.md ?
-					aFile.basename === parent.name ||           // Folder Note mode: inside folder, same name
-
-					aFile.basename === this.settings.additionalSortspecFile ||   // when user configured _about_
-					aFile.name === this.settings.additionalSortspecFile ||       // when user configured _about_.md
-					aFile.path === this.settings.additionalSortspecFile ||       // when user configured Inbox/sort.md
-					aFile.path === `${this.settings.additionalSortspecFile}.md` || // when user configured Inbox/sort
-
-					aFile.basename === this.settings.indexNoteNameForFolderNotes ||   // when user configured as index
-					aFile.name === this.settings.indexNoteNameForFolderNotes          // when user configured as index.md
-				) {
+				if (this.isPotentialSortingSpecFile(aFile)) {
 					const sortingSpecTxt: string|undefined = mCache.getCache(aFile.path)?.frontmatter?.[SORTINGSPEC_YAML_KEY]
 					// Warning: newer Obsidian versions can return objects as well, hence the explicit check for string value
 					if (typeof sortingSpecTxt === 'string') {
@@ -555,6 +562,27 @@ export default class CustomSortPlugin
 		)
 
 		this.registerEvent(
+			this.app.metadataCache.on("changed", (file: TFile) => {
+				if (!this.isPotentialSortingSpecFile(file)) return
+
+				if (this.sortSpecReloadTimer !== null) {
+					window.clearTimeout(this.sortSpecReloadTimer)
+				}
+				this.sortSpecReloadTimer = window.setTimeout(() => {
+					this.sortSpecReloadTimer = null
+
+					// Re-parse only after metadataCache exposes the new frontmatter.
+					this.readAndParseSortingSpec()
+					if (!this.settings.suspended && this.sortSpecCache) {
+						this.customSortAppliedAtLeastOnce = false
+						const fileExplorer = this.checkFileExplorerIsAvailableAndPatchable(false).v
+						fileExplorer?.view?.requestSort?.()
+					}
+				}, 300)
+			})
+		)
+
+		this.registerEvent(
 			this.app.vault.on("rename", (file: TAbstractFile, oldPath: string) => {
 				const bookmarksPlugin = getBookmarksPlugin(plugin.app, plugin.settings.bookmarksGroupToConsumeAsOrderingReference)
 				if (bookmarksPlugin) {
@@ -588,6 +616,11 @@ export default class CustomSortPlugin
 		let plugin = this;
 
 		this.register(() => {
+			if (this.sortSpecReloadTimer !== null) {
+				window.clearTimeout(this.sortSpecReloadTimer)
+				this.sortSpecReloadTimer = null
+			}
+
 			plugin.uninstallFileExplorerPatchIfInstalled()
 
 			// Request standard File Explorer sorting to remove any custom sorting cached by File Explorer

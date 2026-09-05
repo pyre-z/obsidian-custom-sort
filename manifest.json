@@ -1,10 +1,10 @@
 {
 	"id": "custom-sort",
 	"name": "Custom File Explorer sorting",
-	"version": "3.1.6-zh.1",
+	"version": "3.1.6-zh.2",
 	"minAppVersion": "1.7.2",
 	"description": "通过配置或拖放，自由控制文件管理器中文件和文件夹的排序方式。",
-	"author": "SebastianMC",
+	"author": "SebastianMC, PyreZ",
 	"authorUrl": "https://github.com/SebastianMC",
 	"isDesktopOnly": false
 }
