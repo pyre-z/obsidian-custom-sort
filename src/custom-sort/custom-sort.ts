@@ -458,7 +458,13 @@ export const determineSortingGroup = function (entry: TFile | TFolder, spec: Cus
 				break;
 			case CustomSortGroupType.ExactName:
 				if (group.exactText) {
-					if (nameForMatching === group.exactText) {
+					// Manual file entries are documented with their extension (e.g. `Note.md`),
+					// while the historical matcher normally uses the basename. Accept both forms:
+					// extension-bearing specs match the complete filename, extension-less specs
+					// retain the existing basename behavior.
+					const exactNameMatches = nameForMatching === group.exactText ||
+						(aFile && entry.name === group.exactText)
+					if (exactNameMatches) {
 						determined = true;
 					}
 				} else { // regexp is involved

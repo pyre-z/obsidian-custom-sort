@@ -639,6 +639,26 @@ describe('determineSortingGroup', () => {
 				path: 'Some parent folder/References.md'
 			});
 		})
+		it('should correctly recognize exact filename with extension', () => {
+			// given
+			const file: TFile = mockTFile('行列式', 'md', 111, MOCK_TIMESTAMP + 222, MOCK_TIMESTAMP + 333);
+			const sortSpec: CustomSortSpec = {
+				targetFoldersPaths: ['/'],
+				groups: [{
+					type: CustomSortGroupType.ExactName,
+					exactText: '行列式.md'
+				}]
+			}
+
+			// when
+			const result = determineSortingGroup(file, sortSpec)
+
+			// then
+			expect(result.groupIdx).toBe(0)
+			expect(result.sortString).toBe('行列式')
+			expect(result.sortStringWithExt).toBe('行列式.md')
+		})
+
 		it('should correctly recognize exact simple regex-based name', () => {
 			// given
 			const file: TFile = mockTFile('References 12', 'md', 111, MOCK_TIMESTAMP + 222, MOCK_TIMESTAMP + 333);
