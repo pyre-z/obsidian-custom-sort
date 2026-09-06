@@ -60,6 +60,12 @@ import {
 	ImplicitSortspecForBookmarksIntegration
 } from "./custom-sort/custom-sort-utils";
 import {
+	addHideToSpecFile,
+	FindSpecResult,
+	findSpecToEdit,
+	removeHideFromSpecFile,
+} from './custom-sort/hide-from-tree';
+import {
 	CustomSortPluginSettings,
 	CustomSortSettingTab,
 	DEFAULT_SETTING_FOR_1_2_0_UP,
@@ -486,6 +492,9 @@ export default class CustomSortPlugin
 			this.app.workspace.on("file-menu", (menu: Menu, file: TAbstractFile, source: string, leaf?: WorkspaceLeaf) => {
 				if (!this.settings.customSortContextSubmenu) return;  // Don't show the context menus at all
 
+				// First-level convenience action: hide/show this item in the file tree.
+				this.addHideShowMenuItems(menu, [file]);
+
 				const customSortMenuItem = (item?: MenuItem) => {
 					// if parameter is empty it means mobile invocation, where submenus are not supported.
 					// In that case flatten the menu.
@@ -529,6 +538,11 @@ export default class CustomSortPlugin
 			// @ts-ignore
 			this.app.workspace.on("files-menu", (menu: Menu, files: TAbstractFile[], source: string, leaf?: WorkspaceLeaf) => {
 				if (!this.settings.customSortContextSubmenu) return;  // Don't show the context menus at all
+
+				// First-level convenience action: hide/show the selected items.
+				if (files && files.length > 0) {
+					this.addHideShowMenuItems(menu, files);
+				}
 
 				const customSortMenuItem = (item?: MenuItem) => {
 					// if parameter is empty it means mobile invocation, where submenus are not supported.
@@ -687,7 +701,10 @@ export default class CustomSortPlugin
 		// Performance optimization
 		//     Primary intention: when the implicit bookmarks integration is enabled, remain on std Obsidian, if no need to involve bookmarks
 		let sortingAndGroupingStats: HasSortingOrGrouping = collectSortingAndGroupingTypes(sortSpec)
-		if (hasOnlyByBookmarkOrStandardObsidian(sortingAndGroupingStats)) {
+		// A spec containing only hide directives still requires custom processing.
+		// Do not let the standard-sorting optimization discard itemsToHide.
+		const hasHiddenItems = (sortSpec?.itemsToHide?.size ?? 0) > 0
+		if (!hasHiddenItems && hasOnlyByBookmarkOrStandardObsidian(sortingAndGroupingStats)) {
 			const bookmarksPlugin: BookmarksPluginInterface | undefined = getBookmarksPlugin(this.app, this.settings.bookmarksGroupToConsumeAsOrderingReference, false, true)
 			if (!bookmarksPlugin?.bookmarksIncludeItemsInFolder(folder.path)) {
 				sortSpec = null
@@ -698,6 +715,102 @@ export default class CustomSortPlugin
 			sortSpec: sortSpec,
 			sortingAndGroupingStats: sortingAndGroupingStats
 		}
+	}
+
+	/**
+	 * The parent folder that controls sorting of the given entry.
+	 * For a file this is its parent folder; for a folder this is itself
+	 * (hiding an entry is a rule inside the folder containing it).
+	 */
+	sortingFolderForEntry(entry: TAbstractFile): TFolder {
+		if (entry instanceof TFile) return entry.parent ?? this.app.vault.getRoot()
+		return entry as TFolder
+	}
+
+	/** Whether the entry is currently hidden by the effective sort spec cache. */
+	isEntryHidden(entry: TAbstractFile): boolean {
+		const folder = this.sortingFolderForEntry(entry)
+		const spec = this.determineSortSpecForFolder(folder.path, folder.name)
+		const entryName = entry.name
+		return spec?.itemsToHide?.has(entryName) ?? false
+	}
+
+	/**
+	 * Hide or show an entry by editing the nearest controlling sortspec file.
+	 * When hide=true and no spec covers the folder, a new sortspec.md is created
+	 * in the entry's own folder.
+	 */
+	async setEntryHidden(entry: TAbstractFile, hide: boolean): Promise<void> {
+		const folder = this.sortingFolderForEntry(entry)
+		const entryName = entry.name
+		const result: FindSpecResult = await findSpecToEdit(
+			this.app.vault,
+			folder,
+			this.settings.additionalSortspecFile,
+			this.settings.indexNoteNameForFolderNotes
+		)
+
+		if (hide) {
+			await addHideToSpecFile(this.app.vault, result, entryName)
+		} else {
+			if (!result.file) return
+			await removeHideFromSpecFile(this.app.vault, result, entryName)
+		}
+
+		// Re-parse and refresh File Explorer so the change applies immediately.
+		this.readAndParseSortingSpec()
+		if (!this.settings.suspended && this.sortSpecCache) {
+			this.customSortAppliedAtLeastOnce = false
+			const fileExplorer = this.checkFileExplorerIsAvailableAndPatchable(false).v
+			fileExplorer?.view?.requestSort?.()
+		}
+	}
+
+	/**
+	 * Refresh the File Explorer sort state after editing a spec file, without
+	 * flipping the suspended flag. Used when the edit is done outside setEntryHidden.
+	 */
+	refreshSortingAfterSpecEdit(): void {
+		if (!this.settings.suspended && this.sortSpecCache) {
+			this.customSortAppliedAtLeastOnce = false
+			const fileExplorer = this.checkFileExplorerIsAvailableAndPatchable(false).v
+			fileExplorer?.view?.requestSort?.()
+		}
+	}
+
+	/**
+	 * Add a first-level "hide from file tree / show in file tree" menu item.
+	 * For a single entry, the label toggles depending on whether it is already
+	 * hidden by the effective spec. For multiple entries, it performs the same
+	 * action on all of them.
+	 */
+	addHideShowMenuItems(menu: Menu, entries: TAbstractFile[]): void {
+		if (entries.length === 0) return
+
+		const single = entries.length === 1
+		const allHidden = entries.every((e) => this.isEntryHidden(e))
+
+		// All hidden -> "show"; otherwise if none hidden -> "hide"; mixed -> "hide" (bulk hide remaining)
+		let hideAction: boolean
+		let titleKey: string
+		if (allHidden) {
+			hideAction = false
+			titleKey = single ? 'menu.showInTree' : 'menu.showInTreeSelected'
+		} else {
+			hideAction = true
+			titleKey = single ? 'menu.hideFromTree' : 'menu.hideFromTreeSelected'
+		}
+
+		menu.addItem((it) => {
+			it.setTitle(t(titleKey))
+			it.setIcon(hideAction ? 'eye-off' : 'eye')
+			it.onClick(async () => {
+				for (const e of entries) {
+					await this.setEntryHidden(e, hideAction)
+				}
+				this.refreshSortingAfterSpecEdit()
+			})
+		})
 	}
 
 	orderedFolderItemsForBookmarking(folder: TFolder, bookmarksPlugin: BookmarksPluginInterface): Array<TAbstractFile> {

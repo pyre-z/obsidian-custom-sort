@@ -231,6 +231,23 @@ This fork adds **i18n (internationalization) support**:
 
 To switch language: **Settings → Plugin options → Interface language** → choose Auto / 简体中文 / English. It takes effect immediately, no restart needed.
 
+## Real-time sortspec refresh (this fork)
+
+After editing and saving `sortspec.md`, this fork **automatically** re-reads the sorting specification and refreshes File Explorer — no need to click the ribbon icon.
+
+- Watches metadata changes on `sortspec.md` (plus folder notes, additional spec files, index notes, etc.)
+- ~300ms debounce avoids frequent re-sorts during continuous saving
+- File Explorer order updates immediately on save
+
+## Hide / show in File Explorer (this fork)
+
+Besides writing `/--hide:` rules manually, you can also operate directly in File Explorer:
+
+- Right-click a single file/folder → "Hide from file tree" / "Show in file tree"
+- Multi-select then right-click → batch hide/show
+- Hide rules are written to the corresponding folder's `sortspec.md` automatically (created if missing)
+- For a single item, the menu label toggles based on whether it is already hidden (`eye-off` / `eye` icons)
+
 ## Credits
 
 Thanks to [Nothingislost](https://github.com/nothingislost) for the monkey-patching ideas of File Explorer
