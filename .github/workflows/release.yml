@@ -25,6 +25,8 @@ jobs:
               run: |
                   npm ci
                   npm run build
+                  # 本 fork 的 esbuild 输出到 dist/main.js，发布资产需要根目录的 main.js
+                  cp dist/main.js main.js
 
             - name: Check for optional styles
               id: styles
