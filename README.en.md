@@ -157,7 +157,8 @@ The list of automatic sorting orders includes:
 - `by-bookmarks-order` - reflect the order of selected group of items in Bookmarks
 - `files-first` or `folders-first` - self explaining
 - `vsc-unicode` or `unicode-charcode` - tricky for geeks
-- `by-metadata:` modifier to use specific metadata for sorting
+- `vsc-unicode-natural` or `unicode-charcode-natural` - same as above, but digit runs are compared numerically
+  (`Part 2` < `Part 10`, `第2章` < `第10章`), symbols sort before letters, Latin before CJK — matches VS Code / Windows Explorer- `by-metadata:` modifier to use specific metadata for sorting
 - `using-extractor:` in connection with `by-metadata:` to use only part of metadata value, for example a date in specified format
 - `,` separator to specify two levels of sorting. When combining folder-level and group-level sorting this allows for up to 4 sorting levels
 - `advanced recursive modified` or `advanced recursive created` - advanced variants of `advanced modified` and `advanced created`. 
